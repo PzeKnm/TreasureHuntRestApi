@@ -14,8 +14,8 @@ namespace TreasureHunt.Data
   {
 
     // private static SqlConnection connection = new SqlConnection();
- //   private static string sConn = "Server=tcp:sandgateth.database.windows.net,1433;Initial Catalog=TreasureHunt;Persist Security Info=False;User ID=TreasureHuntUser;Password=Treasure2Find;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
-    private static string sConn = "Server=ASWKNM01\\SQL2008;Initial Catalog=TreasureHunt;Persist Security Info=False;User ID=TreasureHuntUser;Password=Treasure2Find;MultipleActiveResultSets=False;Connection Timeout=30;";
+    private static string sConn = "Server=tcp:sandgateth.database.windows.net,1433;Initial Catalog=TreasureHunt;Persist Security Info=False;User ID=TreasureHuntUser;Password=Treasure2Find;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+  //  private static string sConn = "Server=ASWKNM01\\SQL2008;Initial Catalog=TreasureHunt;Persist Security Info=False;User ID=TreasureHuntUser;Password=Treasure2Find;MultipleActiveResultSets=False;Connection Timeout=30;";
 
     private static int cInactivityTimoutMin = 10;
 
@@ -503,7 +503,40 @@ namespace TreasureHunt.Data
     }
   
 
+    
+    
+    public string GetSetting(string SettingName)
+    {
+      string value = "";
+      try
+      {
+        using (SqlConnection conn = new SqlConnection(sConn))
+        {
+          conn.Open();
+          string sQry = string.Format("SELECT Value FROM TSettings where name = '{0}' ", SettingName);
+          using (SqlCommand cmd = new SqlCommand(sQry, conn))
+          {
+            SqlDataReader reader = cmd.ExecuteReader();
 
+            if (reader.HasRows)
+            {
+              while (reader.Read())
+              {
+                value = reader["Value"].ToString();  
+              }
+            }
+            
+            reader.Close();
+          }
+        }
+      }
+      catch (SqlException ex)
+      {
+        _logger.LogInformation(ex.Message);
+      }
+
+      return value;
+    }
     
     public List<UserDto> GetUsers()
     {
