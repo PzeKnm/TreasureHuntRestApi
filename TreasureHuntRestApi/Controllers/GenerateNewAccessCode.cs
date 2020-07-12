@@ -27,10 +27,7 @@ namespace TreasureHunt
       {
           _logger = log;
           log.LogInformation("Performing GenerateNewAccessCode.");
-
-
-
-
+               
           int nSuppressMessage = await Task.Run(() => {return 99;});
 
           // TStation.Id
@@ -62,19 +59,19 @@ namespace TreasureHunt
 
           // Test if station is already either occupied or under "Waiting For Authorisation"
           string status = da.GetStationStatus(hubDeviceId);
-          if(status != "Online")
+          if(status != "Online_Ready" && status != "Online_Demo" && status != "Online_Dormant")
           {
             AccessResult arError = new AccessResult();
             arError.Success = false;
             var wrappedError = new Wrapper<AccessResult>(arError);
 
-            wrappedError.ErrorMessage = "Station not in online status";
+            wrappedError.ErrorMessage = "Station not in online status, current status is: " + status;
 
             if(status == "Authenticating")
               wrappedError.ErrorMessage = "Authenticating. Station busy with other client";
 
-            wrappedError.StatusCode = 200;
-            return new OkObjectResult(wrappedError);               
+            wrappedError.StatusCode = StatusCodes.Status409Conflict;
+            return new BadRequestObjectResult(wrappedError);               
           }
 
           await SignalRClientComms.PublishMessageToSignalRClients(signalRMessages, GameId, hubDeviceId, 
